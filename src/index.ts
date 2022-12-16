@@ -28,3 +28,5 @@ export function createWorker(
 ): Worker {
   return new Worker(broker, backend, queue);
 }
+
+export { Client, Worker };
