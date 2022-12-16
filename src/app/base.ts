@@ -10,6 +10,7 @@ export default class Base {
   private _backend: CeleryBackend;
   private _broker: CeleryBroker;
   conf: CeleryConf;
+  ssl: object;
 
   /**
    * Parent Class of Client and Worker
@@ -17,11 +18,17 @@ export default class Base {
    *
    * @constructor Base
    */
-  constructor(broker: string, backend: string, queue = "celery") {
+  constructor(broker: string, backend: string, queue = "celery", ssl = {}) {
     this.conf = defaultConf();
     this.conf.CELERY_BROKER = broker;
     this.conf.CELERY_BACKEND = backend;
     this.conf.CELERY_QUEUE = queue;
+    this.conf.CELERY_BACKEND_OPTIONS = {
+      ssl: ssl,
+    };
+    this.conf.CELERY_BROKER_OPTIONS = {
+      ssl: ssl,
+    };
   }
 
   get broker(): CeleryBroker {

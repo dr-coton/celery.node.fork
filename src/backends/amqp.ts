@@ -2,7 +2,7 @@ import * as amqplib from "amqplib";
 import { CeleryBackend } from ".";
 
 export default class AMQPBackend implements CeleryBackend {
-  opts: { [ key:string ]: any };
+  opts: { [key: string]: any };
   connect: Promise<amqplib.Connection>;
   channel: Promise<amqplib.Channel>;
 
@@ -12,19 +12,19 @@ export default class AMQPBackend implements CeleryBackend {
    * @param {string} url the connection string of amqp
    * @param {object} opts the options object for amqp connect of amqplib
    */
-  constructor(url: string, opts: object) {
+  constructor(url: string, opts: any) {
     this.opts = opts;
-    this.connect = amqplib.connect(url, opts);
+    this.connect = amqplib.connect(url, opts?.ssl ? opts : opts?.ssl);
     this.channel = this.connect
-      .then(conn => conn.createChannel())
-      .then(ch =>
+      .then((conn) => conn.createChannel())
+      .then((ch) =>
         ch
           .assertExchange("default", "direct", {
             durable: true,
             autoDelete: true,
             internal: false,
             // nowait: false,
-            arguments: null
+            arguments: null,
           })
           .then(() => Promise.resolve(ch))
       );
@@ -43,7 +43,7 @@ export default class AMQPBackend implements CeleryBackend {
    * @returns {Promise} promises that continues if amqp disconnected.
    */
   public disconnect(): Promise<void> {
-    return this.connect.then(conn => conn.close());
+    return this.connect.then((conn) => conn.close());
   }
 
   /**
@@ -61,7 +61,7 @@ export default class AMQPBackend implements CeleryBackend {
   ): Promise<boolean> {
     const queue = taskId.replace(/-/g, "");
     return this.channel
-      .then(ch =>
+      .then((ch) =>
         ch
           .assertQueue(queue, {
             durable: true,
@@ -69,29 +69,28 @@ export default class AMQPBackend implements CeleryBackend {
             exclusive: false,
             // nowait: false,
             arguments: {
-              "x-expires": this.opts.CELERY_RESULT_EXPIRES || 86400000
-            }
+              "x-expires": this.opts.CELERY_RESULT_EXPIRES || 86400000,
+            },
           })
           .then(() => Promise.resolve(ch))
       )
-      .then(ch =>
-
+      .then((ch) =>
         ch.publish(
           "",
           queue,
           Buffer.from(
-              JSON.stringify({
-                status: state,
-                result: state == 'FAILURE' ? null : result,
-                traceback: null,
-                children: [],
-                task_id: taskId,
-                date_done: new Date().toISOString()
-              })
+            JSON.stringify({
+              status: state,
+              result: state == "FAILURE" ? null : result,
+              traceback: null,
+              children: [],
+              task_id: taskId,
+              date_done: new Date().toISOString(),
+            })
           ),
           {
             contentType: "application/json",
-            contentEncoding: "utf-8"
+            contentEncoding: "utf-8",
           }
         )
       );
@@ -106,7 +105,7 @@ export default class AMQPBackend implements CeleryBackend {
   public getTaskMeta(taskId: string): Promise<object> {
     const queue = taskId.replace(/-/g, "");
     return this.channel
-      .then(ch =>
+      .then((ch) =>
         ch
           .assertQueue(queue, {
             durable: true,
@@ -114,17 +113,17 @@ export default class AMQPBackend implements CeleryBackend {
             exclusive: false,
             // nowait: false,
             arguments: {
-              "x-expires": this.opts.CELERY_RESULT_EXPIRES || 86400000
-            }
+              "x-expires": this.opts.CELERY_RESULT_EXPIRES || 86400000,
+            },
           })
           .then(() => Promise.resolve(ch))
       )
-      .then(ch =>
+      .then((ch) =>
         ch.get(queue, {
-          noAck: false
+          noAck: false,
         })
       )
-      .then(msg => {
+      .then((msg) => {
         if (msg === false) {
           return null;
         }

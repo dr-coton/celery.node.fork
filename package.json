@@ -1,6 +1,6 @@
 {
   "name": "@dr-coton/celery-node",
-  "version": "0.5.9",
+  "version": "0.6.1",
   "description": "celery written in nodejs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,8 +9,7 @@
     "format": "prettier --write \"{,!(node_modules)/**/}*.{js,ts}\"",
     "format-check": "prettier --check \"{,!(node_modules)/**/}*.{js,ts}\"",
     "dist": "tsc",
-    "test": "mocha -r ts-node/register ./test/**/*",
-    "prepublishOnly": "npm run dist & npm test"
+    "prepublishOnly": "npm run dist"
   },
   "repository": {
     "type": "git",
